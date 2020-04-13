@@ -48,7 +48,6 @@ var gaggle = require('gaggle')
         min: 300
       , max: 3000
       }
-    , heartbeatInterval: 40
       // Should the leader send a heartbeat if it would speed
       // up the commit of a message?
     , accelerateHeartbeats: false

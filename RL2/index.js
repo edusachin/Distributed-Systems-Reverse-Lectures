@@ -18,7 +18,7 @@ var nodeA = gaggle(defaults({
    channelName: 'foobar'
   },
   electionTimeout: {
-     min: 300, max: 3000
+     min: 300, max: 350
   }
 }
 ))
