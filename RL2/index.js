@@ -8,20 +8,22 @@ var defaults = require('lodash/defaults')
 //       }
 //     , clusterSize: 3
 //     }
+const start = Date.now()
 
 var nodeA = gaggle(defaults({
   id: uuid.v4(),
-  clusterSize: 5,
+  clusterSize: 10000,
   channel: {
     name: 'redis',
     // required, the channel to pub/sub to
    channelName: 'foobar'
   },
   electionTimeout: {
-     min: 300, max: 350
+     min: 300, max: 3000
   }
 }
-))
+)
+)
 //var nodeB = gaggle(defaults({id: uuid.v4()}, opts))
 var nodeB = gaggle(defaults({
   id: uuid.v4(),
@@ -55,8 +57,16 @@ var nodeC = gaggle(defaults({
 //   console.log(data)
 // })
 
+
+nodeA.on('leaderElected', function (data) {
+  console.log('***************** LeaderElected *******************')
+  console.log(Date.now() - start);
+  //console.log(data)
+})
+
+
 nodeA.on('committed', function (data) {
-  console.log('*****************this is us*******************')
+  console.log('***************** Committed *******************')
   console.log(data)
 })
 
@@ -90,10 +100,15 @@ nodeA.append('Sachin').then(function() {
 //   // I may never be called!
 // })
 
-nodeA.append('Gash').then(function() {
-  console.log('Gash')
+nodeA.append('John').then(function() {
+  console.log('John')
 })
 
+
+nodeA.on('appended', function (data) {
+  console.log('***************** Appended *******************')
+  console.log(data)
+})
 
 
 nodeA.getLog()
