@@ -8,16 +8,22 @@ var defaults = require('lodash/defaults')
 //       }
 //     , clusterSize: 3
 //     }
+const start = Date.now()
 
 var nodeA = gaggle(defaults({
   id: uuid.v4(),
-  clusterSize: 3,
+  clusterSize: 10000,
   channel: {
     name: 'redis',
     // required, the channel to pub/sub to
    channelName: 'foobar'
- }}
-))
+  },
+  electionTimeout: {
+     min: 300, max: 3000
+  }
+}
+)
+)
 //var nodeB = gaggle(defaults({id: uuid.v4()}, opts))
 var nodeB = gaggle(defaults({
   id: uuid.v4(),
@@ -26,6 +32,9 @@ var nodeB = gaggle(defaults({
     name: 'redis',
     // required, the channel to pub/sub to
    channelName: 'foobar'
+ },
+ electionTimeout: {
+    min: 300, max: 5000
  }
 }))
 
@@ -36,41 +45,85 @@ var nodeC = gaggle(defaults({
     name: 'redis',
     // required, the channel to pub/sub to
    channelName: 'foobar'
+ },
+ electionTimeout: {
+    min: 300, max: 5000
  }
 }))
 
 // Nodes will emit "committed" events whenever the cluster
 // comes to consensus about an entry
-nodeC.on('committed', function (data) {
+// nodeC.on('committed', function (data) {
+//   console.log(data)
+// })
+
+
+nodeA.on('leaderElected', function (data) {
+  console.log('***************** LeaderElected *******************')
+  console.log(Date.now() - start);
+  //console.log(data)
+})
+
+
+nodeA.on('committed', function (data) {
+  console.log('***************** Committed *******************')
   console.log(data)
 })
 
 // You can be notified when a specific message is committed
 // by providing a callback
-nodeC.append('mary', function () {
-  console.log(',')
-})
+// nodeC.append('mary', function () {
+//   console.log(',')
+// })
 
 // Or, you can use promises
-nodeA.append('had').then(function () {
-  console.log('!')
+nodeA.append('Pranav').then(function () {
+  console.log('Pranav')
 })
 
 // Or, you can just cross your fingers and hope that an error
 // doesn't happen by neglecting the return result and callback
-nodeA.append('a')
-
+nodeA.append('Shivani').then(function () {
+  console.log('Shivani')
+})
 // Entry data can also be numbers, arrays, or objects
 // we were just using strings here for simplicity
-nodeB.append({foo: 'lamb'})
+//nodeB.append({foo: 'lamb'})
 
 // You can specify a timeout as a second argument
-nodeA.append('little', 1000)
+nodeA.append('Sachin').then(function() {
+  console.log('Sachin')
+})
 
 // By default, gaggle will wait indefinitely for a message to commit
-nodeC.append('a', function () {
-  // I may never be called!
+// nodeC.append('a', function () {
+//   // I may never be called!
+// })
+
+nodeA.append('John').then(function() {
+  console.log('John')
 })
+
+
+nodeA.on('appended', function (data) {
+  console.log('***************** Appended *******************')
+  console.log(data)
+})
+
+
+nodeA.getLog()
+nodeA.getCommitIndex()
+nodeA.isLeader()
+
+
+//nodeB.getLog()
+//nodeB.getCommitIndex()
+//nodeB.isLeader()
+
+
+//nodeC.getLog()
+//nodeC.getCommitIndex()
+//nodeC.isLeader()
 
 // This example prints the sentence:
 //     "mary , had a little {foo: 'lamb'} !"
