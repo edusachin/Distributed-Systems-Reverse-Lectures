@@ -1,27 +1,35 @@
 var gaggle = require('gaggle')
 var uuid = require('uuid')
 var defaults = require('lodash/defaults')
-// var opts = {
-//       channel: {
-//         name: 'redis'
-//       , redisChannel: 'foobar'
-//       }
-//     , clusterSize: 3
-//     }
+
 const start = Date.now()
 
 var nodeA = gaggle(defaults({
   id: uuid.v4(),
-  clusterSize: 10000,
+  clusterSize: 5,
   channel: {
     name: 'redis',
     // required, the channel to pub/sub to
    channelName: 'foobar'
   },
+  rpc: {
+        foo: function foo (a, b, c, d) {
+          // "this" inside here refers to the leader Gaggle instance
+          // so you can do things like this...
+          if (this.hasUncommittedEntriesFromPreviousTerms()) {
+            this.append('noop')
+
+            return new Error('I am not ready yet, try again in a few seconds')
+          }
+          else {
+            return 'foo'
+          }
+        }
+  },
   electionTimeout: {
      min: 300, max: 3000
+   }
   }
-}
 )
 )
 //var nodeB = gaggle(defaults({id: uuid.v4()}, opts))
@@ -57,6 +65,7 @@ var nodeC = gaggle(defaults({
 //   console.log(data)
 // })
 
+nodeA.isLeader()
 
 nodeA.on('leaderElected', function (data) {
   console.log('***************** LeaderElected *******************')
@@ -64,17 +73,18 @@ nodeA.on('leaderElected', function (data) {
   //console.log(data)
 })
 
+nodeA.isLeader()
+nodeA.getCommitIndex()
 
-nodeA.on('committed', function (data) {
-  console.log('***************** Committed *******************')
-  console.log(data)
-})
 
 // You can be notified when a specific message is committed
 // by providing a callback
 // nodeC.append('mary', function () {
 //   console.log(',')
 // })
+
+nodeA.dispatchOnLeader('foo', ['bar', 'baz'], 5000, function (err, result) {
+})
 
 // Or, you can use promises
 nodeA.append('Pranav').then(function () {
@@ -91,6 +101,7 @@ nodeA.append('Shivani').then(function () {
 //nodeB.append({foo: 'lamb'})
 
 // You can specify a timeout as a second argument
+nodeA.getCommitIndex()
 nodeA.append('Sachin').then(function() {
   console.log('Sachin')
 })
@@ -99,22 +110,29 @@ nodeA.append('Sachin').then(function() {
 // nodeC.append('a', function () {
 //   // I may never be called!
 // })
-
+nodeA.getCommitIndex()
 nodeA.append('John').then(function() {
   console.log('John')
 })
 
+nodeA.dispatchOnLeader('foo', ['bar', 'baz'], 5000, function (err, result) {
+})
 
+nodeA.getCommitIndex()
 nodeA.on('appended', function (data) {
   console.log('***************** Appended *******************')
   console.log(data)
 })
 
+nodeA.on('committed', function (data) {
+  console.log('***************** Committed *******************')
+  console.log(data)
+})
+
+nodeA.getCommitIndex()
+
 
 nodeA.getLog()
-nodeA.getCommitIndex()
-nodeA.isLeader()
-
 
 //nodeB.getLog()
 //nodeB.getCommitIndex()
