@@ -6,7 +6,7 @@ const start = Date.now()
 
 var nodeA = gaggle(defaults({
   id: uuid.v4(),
-  clusterSize: 750,
+  clusterSize: 5,
   channel: {
     name: 'redis',
     // required, the channel to pub/sub to
